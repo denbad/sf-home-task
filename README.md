@@ -38,6 +38,8 @@ curl -k https://demo.baboon.localhost/api/payment?firstname=James&lastname=Bond&
 Clone from git repository:
 ```shell
 git clone git@github.com:denbad/sf-home-task.git demo
+```
+```shell
 cd demo
 ```
 
