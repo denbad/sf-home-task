@@ -1,5 +1,38 @@
 ## Demo Symfony app to conduct payments
 
+### Minimal command set to make it run:
+
+```shell
+git clone git@github.com:denbad/sf-home-task.git demo
+```
+```shell
+cd demo
+```
+```shell
+./run init
+```
+```shell
+./run vendors
+```
+```shell
+./run test
+```
+```shell
+./run start
+```
+```shell
+./run bin/console messenger:consume application_events domain_events -vvv
+```
+```shell
+curl -k https://demo.baboon.localhost/api/payment?firstname=James&lastname=Bond&paymentDate=2022-12-12T15%3A19%3A21%2B00%3A00&amount=399.99&description=LN20221212&refId=130f8a89-51c9-47d0-a6ef-1aea54924d3a
+```
+```shell
+./run bin/console app:payments:export --file=payments-4.csv
+```
+```shell
+./run bin/console app:payments:list --date=Y-D-m
+```
+
 ### 1. Install
 
 Clone from git repository:
