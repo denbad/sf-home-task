@@ -1,0 +1,4 @@
+loan_payment:
+    path: /api/payment
+    controller: Application\Controller\PaymentAction
+    methods: GET|POST

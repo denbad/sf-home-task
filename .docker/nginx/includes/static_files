@@ -1,0 +1,28 @@
+location ~* \.(jpe?g|gif|bmp|swf|png|ico)$ {
+	log_not_found off;
+	expires 0;
+	add_header Pragma public;
+	add_header Cache-Control public;
+	add_header Timing-Allow-Origin *;
+	try_files $uri /index.php$is_args$args;
+}
+
+location ~* \.(css|js)$ {
+	log_not_found off;
+	expires 0;
+	add_header Pragma public;
+	add_header Cache-Control public;
+	add_header Timing-Allow-Origin *;
+	include includes/xss;
+	try_files $uri /index.php$is_args$args;
+}
+
+location ~* \.(ttf|otf|woff|eot)$ {
+	log_not_found off;
+	expires 0;
+	add_header Pragma public;
+	add_header Cache-Control public;
+	add_header Timing-Allow-Origin *;
+	add_header Access-Control-Allow-Origin *;
+	try_files $uri /index.php$is_args$args;
+}

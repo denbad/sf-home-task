@@ -1,0 +1,23 @@
+framework:
+    messenger:
+        default_bus: message.bus
+
+        buses:
+            message.bus:
+            event.bus:
+                default_middleware: allow_no_handlers
+
+        transports:
+            application_events:
+                dsn: '%env(resolve:MESSENGER_APPLICATION_EVENTS_DSN)%'
+                retry_strategy:
+                    max_retries: 0
+
+            domain_events:
+                dsn: '%env(resolve:MESSENGER_DOMAIN_EVENTS_DSN)%'
+                retry_strategy:
+                    max_retries: 0
+
+        routing:
+            Application\Event\ApplicationEvent: application_events
+            Domain\Loan\Event\DomainEvent: domain_events

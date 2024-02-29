@@ -1,0 +1,86 @@
+version: '3.6'
+
+volumes:
+    composer_home:
+    demo_mysql:
+
+    app:
+        driver: local
+        driver_opts:
+            type: none
+            device: ./..
+            o: bind
+
+networks:
+    local:
+
+services:
+    nginxproxy:
+        container_name: 'demo-proxyserver'
+        build:
+            context: .
+            dockerfile: proxy/Dockerfile
+        ports:
+           - "127.0.0.1:443:443"
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:rw
+            - ./certs:/etc/nginx/certs:ro
+        depends_on:
+            - nginx
+        networks:
+            - local
+
+    nginx:
+        container_name: 'demo-webserver'
+        build:
+            context: .
+            dockerfile: nginx/Dockerfile
+        volumes:
+            - ./../public:/app/public:ro
+            - ./certs:/etc/nginx/certs:ro
+        depends_on:
+            - fpm
+        environment:
+            VIRTUAL_PROTO: https
+            VIRTUAL_PORT: 443
+            VIRTUAL_HOST: demo.baboon.localhost
+        networks:
+            - local
+
+    fpm:
+        container_name: 'demo-app'
+        build:
+            context: .
+            dockerfile: php/Dockerfile
+            args:
+                with_xdebug: "n"
+                host_user: ${HOST_USER}
+                host_group: ${HOST_GROUP}
+        user: ${HOST_USER}:${HOST_GROUP}
+        volumes:
+            - app:/app:delegated
+            - composer_home:/home/app/.composer:rw
+        depends_on:
+            - mysql
+        networks:
+            - local
+
+    mysql:
+        container_name: 'demo-database'
+        build:
+            context: .
+            dockerfile: mysql/Dockerfile
+            args:
+                image: ${MYSQL_IMAGE}
+        user: mysql:mysql
+        volumes:
+            - ./mysql/init:/docker-entrypoint-initdb.d:ro
+            - ./mysql/conf.d:/etc/mysql/conf.d:ro
+            - demo_mysql:/var/lib/mysql:delegated
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+            MYSQL_ROOT_HOST: "%"
+        ports:
+            - "127.0.0.1:3306:3306"
+        networks:
+            - local

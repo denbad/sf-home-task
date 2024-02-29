@@ -1,0 +1,64 @@
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+    <entity name="Domain\Loan\Loan" table="loan">
+        <indexes>
+            <index columns="customer_id" name="customer_idx" />
+            <index columns="state" name="state_idx" />
+        </indexes>
+
+        <unique-constraints>
+            <unique-constraint columns="reference" name="reference_unique_idx" />
+        </unique-constraints>
+
+        <id name="id" type="string" length="36">
+            <generator strategy="NONE" />
+        </id>
+
+        <field name="customerId" length="36" />
+        <field name="reference" length="10" />
+
+        <field name="amountIssued" type="decimal" precision="8" scale="2">
+            <options>
+                <option name="unsigned">true</option>
+            </options>
+        </field>
+
+        <field name="amountToPay" type="decimal" precision="8" scale="2">
+            <options>
+                <option name="unsigned">true</option>
+            </options>
+        </field>
+
+        <field name="state" type="smallint" />
+
+        <many-to-many field="payments" target-entity="Domain\Loan\Payment" fetch="EXTRA_LAZY">
+            <cascade>
+                <cascade-persist />
+            </cascade>
+            <join-table name="loan_payments">
+                <join-columns>
+                    <join-column name="loan_id" />
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="payment_id" unique="true" />
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+
+        <many-to-many field="refunds" target-entity="Domain\Loan\Refund" fetch="EXTRA_LAZY">
+            <cascade>
+                <cascade-persist />
+            </cascade>
+            <join-table name="loan_refunds">
+                <join-columns>
+                    <join-column name="loan_id" />
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="refund_id" unique="true" />
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+    </entity>
+</doctrine-mapping>

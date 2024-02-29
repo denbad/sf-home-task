@@ -1,0 +1,82 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # Command
+
+    Application\Command\ExportPaymentsCommand:
+        bind:
+            Infrastructure\FileReader\FileReader:
+                '@Infrastructure\FileReader\CsvReader'
+        tags: [ 'console.command' ]
+
+    Application\Command\ListPaymentsCommand: ~
+
+    # Controller
+
+    Application\Controller\PaymentAction:
+        tags: ['controller.service_arguments']
+
+    Application\Command\PaymentValidator: ~
+    Application\Controller\PaymentValidator: ~
+
+    # Application event listener
+
+    Application\Event\NotifyAdmin:
+        tags:
+            -   name: 'messenger.message_handler'
+                handles: 'Application\Event\PaymentFailed'
+                bus: 'event.bus'
+                from_transport: 'application_events'
+                method: 'whenPaymentFailed'
+
+    # Handler
+
+    Application\Handler\ConductPaymentHandler: ~
+
+    # Model
+
+    Domain\Loan\Loans:
+        '@Infrastructure\Orm\LoanRepository'
+
+    Domain\Loan\Customers:
+        '@Infrastructure\Orm\CustomerRepository'
+
+    # Domain event listener
+
+    Domain\Loan\Event\NotifyCustomer:
+        tags:
+            -   name: 'messenger.message_handler'
+                handles: 'Domain\Loan\Event\LoanPaidOff'
+                bus: 'event.bus'
+                from_transport: 'domain_events'
+                method: 'whenLoanPayedOf'
+
+            -   name: 'messenger.message_handler'
+                handles: 'Domain\Loan\Event\PaymentReceived'
+                bus: 'event.bus'
+                from_transport: 'domain_events'
+                method: 'whenPaymentReceived'
+
+    # Repository
+
+    Infrastructure\Orm\LoanRepository: ~
+    Infrastructure\Orm\CustomerRepository: ~
+
+    # Notificator
+
+    Infrastructure\Notificator\EmailNotificator: ~
+    Infrastructure\Notificator\SmsNotificator: ~
+
+    # File reader
+
+    Infrastructure\FileReader\CsvReader: ~

@@ -1,0 +1,8 @@
+reset_timedout_connection on;
+fastcgi_connect_timeout 5s;
+fastcgi_send_timeout 180s;
+fastcgi_read_timeout 180s;
+fastcgi_split_path_info ^(.+\.php)(/.*)$;
+include fastcgi_params;
+fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+fastcgi_pass php;

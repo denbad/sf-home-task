@@ -1,0 +1,2 @@
+root /app/public;
+index index.php;

@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+set -e
+
+APP_SERVICE=fpm
+DOCKER_DIR=.docker
+COMPOSE_CONFIGS=(-f docker-compose.yml)
+
+ok() {
+    echo "done."
+}
+
+create_docker_compose_env() {
+    if [[ -f $DOCKER_DIR/.env ]]; then
+        echo -n "File $DOCKER_DIR/.env already exists, skipping... "
+
+        return 0
+    fi
+
+    echo -n "Creating $DOCKER_DIR/.env... "
+
+    cp "$DOCKER_DIR"/.env.dist "$DOCKER_DIR"/.env
+
+    set_docker_env HOST_USER $(id -u)
+    set_docker_env HOST_GROUP $(id -g)
+}
+
+set_docker_env() {
+    local -r name="$1"
+    local -r value="$2"
+    sed -i '' -e "s|^\($name=\).*$|\1$value|" "$DOCKER_DIR"/.env
+}
+
+docker() {
+    cd "$DOCKER_DIR"
+    # `command` is required here, because function has the same name as `docker` command.
+    # Auto-tests remove "sudo" from this file, which results in an infinite call loop.
+    command sudo docker "$@"
+    local -r result=$?
+    cd ..
+
+    return $result
+}
+
+docker_compose() {
+    docker compose "${COMPOSE_CONFIGS[@]}" "$@"
+}
+
+docker_compose_start() {
+    docker_compose up --detach --build --remove-orphans
+}
+
+docker_compose_stop() {
+    docker_compose stop
+}
+
+docker_compose_exec_or_run() {
+    local -r service="${1}";
+    local -r command="${*:2}";
+
+    set +e
+    docker_compose exec "$service" sh -c "$command || return 111"
+    local -r status=$?
+    set -e
+
+    # Container is not running, because the status is not success (0) or command failure (111) or SIGTERM (130)
+    if [[ $status -ne 0 && $status -ne 111 && $status -ne 130 ]]; then
+        docker_compose run --rm "$service" sh -c "$command"
+    else
+        return $status
+    fi
+}
+
+init() {
+    create_docker_compose_env
+}
+
+composer() {
+    local -a args
+    [[ -n $1 ]] && args=${@} || args=(install)
+
+    docker_compose_exec_or_run "$APP_SERVICE" composer ${args[@]}
+}
+
+symfony() {
+    docker_compose_exec_or_run "$APP_SERVICE" symfony "${@}"
+}
+
+ecs() {
+    local -a args
+    [[ -n $1 ]] && args=${@} || args=(check)
+
+    docker_compose_exec_or_run "$APP_SERVICE" vendor/bin/ecs ${args[@]}
+}
+
+phpstan() {
+    local -a args
+    [[ -n $1 ]] && args=${@} || args=(analyze src tests)
+
+    docker_compose_exec_or_run "$APP_SERVICE" vendor/bin/phpstan ${args[@]}
+}
+
+phpunit() {
+    local -a args
+    [[ -n $1 ]] && args=${@} || args=()
+
+    docker_compose_exec_or_run "$APP_SERVICE" vendor/bin/phpunit ${args[@]}
+}
+
+case $1 in
+    init)
+        init
+        ok
+    ;;
+
+    start)
+        docker_compose_start
+        ok
+    ;;
+
+    restart)
+        docker_compose_stop
+        docker_compose_start
+        ok
+    ;;
+
+    stop)
+        docker_compose_stop
+        ok
+    ;;
+
+    clean)
+        docker_compose down --volumes --remove-orphans
+        ok
+    ;;
+
+    vendors)
+        composer
+    ;;
+
+    check-platform-requirements)
+        composer check-platform-reqs
+    ;;
+
+    check-symfony-requirements)
+        symfony "check:requirements"
+    ;;
+
+    check-security)
+        symfony "security:check"
+    ;;
+
+    cs-fix)
+        ecs check --fix
+    ;;
+
+    phpstan)
+        phpstan "${@:2}"
+    ;;
+
+    stan)
+        phpstan
+    ;;
+
+    test)
+        phpunit
+    ;;
+
+    phpunit)
+        phpunit "${@:2}"
+    ;;
+
+    cc)
+        docker_compose_exec_or_run "$APP_SERVICE" bin/console cache:clear
+    ;;
+
+    *)
+        docker_compose_exec_or_run "$APP_SERVICE" "${@:1}"
+    ;;
+esac

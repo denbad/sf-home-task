@@ -1,0 +1,3 @@
+location ~ /\.(ht|gitignore$) {
+	deny all;
+}
