@@ -4,7 +4,8 @@
 
 Clone from git repository:
 ```shell
-git clone foo
+git clone git@github.com:denbad/sf-home-task.git demo
+cd demo
 ```
 
 ### 2. Pre-run
@@ -27,27 +28,7 @@ Install vendors:
 ./run vendors
 ```
 
-### 3. Check installation
-
-Check platform requirements:
-
-```shell
-./run check-platform-requirements
-```
-
-Check Symfony requirements:
-
-```shell
-./run check-symfony-requirements
-```
-
-Check security:
-
-```shell
-./run check-security
-```
-
-### 4. Run
+### 3. Run
 
 Start application:
 
@@ -67,6 +48,12 @@ Stop application:
 ./run stop
 ```
 
+Run unit tests:
+
+```shell
+./run test
+```
+
 Start background workers:
 
 ```shell
@@ -77,6 +64,26 @@ Start background workers:
 
 ```shell
 ./run bin/console messenger:stop-workers
+```
+
+### 4. Check installation
+
+(Optionally) Check platform requirements:
+
+```shell
+./run check-platform-requirements
+```
+
+(Optionally) Check Symfony requirements:
+
+```shell
+./run check-symfony-requirements
+```
+
+(Optionally) Check security:
+
+```shell
+./run check-security
 ```
 
 ### 5. Conduct payment via browser / api
