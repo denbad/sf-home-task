@@ -126,7 +126,7 @@ Head to:
 https://demo.baboon.localhost/api/payment
 ```
 
-Try conduct batch payments via GET request:
+Try conduct single payment via GET request:
 
 ```shell
 https://demo.baboon.localhost/api/payment?firstname=James&lastname=Bond&paymentDate=2022-12-12T15%3A19%3A21%2B00%3A00&amount=399.99&description=LN20221212&refId=130f8a89-51c9-47d0-a6ef-1aea54924d3a
@@ -134,7 +134,7 @@ https://demo.baboon.localhost/api/payment?firstname=James&lastname=Bond&paymentD
 
 ### 6. Conduct payment via command line
 
-Try with any csv file of your choice:
+Try batch payments with csv file of your choice:
 
 ```shell
 ./run bin/console app:payments:export --file=payments-1.csv
