@@ -33,6 +33,26 @@ curl -k https://demo.baboon.localhost/api/payment?firstname=James&lastname=Bond&
 ./run bin/console app:payments:list --date=Y-D-m
 ```
 
+### Miscellaneous
+
+Connect to mysql:
+
+```shell
+docker exec -it demo-database mysql -uroot -proot
+```
+
+Run any to composer command:
+
+```shell
+./run composer show -i
+```
+
+Clear application cache:
+
+```shell
+./run cc
+```
+
 ### 1. Install
 
 Clone from git repository:
@@ -151,24 +171,4 @@ Try batch payments with csv file of your choice:
 Run:
 ```shell
 ./run bin/console app:payments:list --date=2022-12-12
-```
-
-### 8. Miscellaneous
-
-Access to composer:
-
-```shell
-./run composer show -i
-```
-
-Clear application cache:
-
-```shell
-./run cc
-```
-
-Connect to mysql:
-
-```shell
-docker exec -it demo-database mysql -uroot -proot
 ```
