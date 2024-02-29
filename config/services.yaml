@@ -59,7 +59,7 @@ services:
                 handles: 'Domain\Loan\Event\LoanPaidOff'
                 bus: 'event.bus'
                 from_transport: 'domain_events'
-                method: 'whenLoanPayedOf'
+                method: 'whenLoanPaidOff'
 
             -   name: 'messenger.message_handler'
                 handles: 'Domain\Loan\Event\PaymentReceived'

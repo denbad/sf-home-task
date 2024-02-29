@@ -23,7 +23,7 @@ final readonly class NotifyCustomer
     ) {
     }
 
-    public function whenLoanPayedOf(LoanPaidOff $event): void
+    public function whenLoanPaidOff(LoanPaidOff $event): void
     {
         $customer = $this->findCustomer($event->customerId);
 
