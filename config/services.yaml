@@ -13,6 +13,8 @@ services:
 
     # Command
 
+    Application\Command\PaymentValidator: ~
+
     Application\Command\ExportPaymentsCommand:
         bind:
             Infrastructure\FileReader\FileReader:
@@ -23,11 +25,10 @@ services:
 
     # Controller
 
+    Application\Controller\PaymentValidator: ~
+
     Application\Controller\PaymentAction:
         tags: ['controller.service_arguments']
-
-    Application\Command\PaymentValidator: ~
-    Application\Controller\PaymentValidator: ~
 
     # Application event listener
 
