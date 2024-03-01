@@ -53,6 +53,12 @@ Clear application cache:
 ./run cc
 ```
 
+Run static analysis:
+
+```shell
+./run stan
+```
+
 ### 1. Install
 
 Clone from git repository:
