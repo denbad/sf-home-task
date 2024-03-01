@@ -30,3 +30,9 @@ parameters:
         - 'src/Util/PhpCsFixer/BlankLineAfterBlockStatementFixer.php'
     symfony:
         container_xml_path: var/cache/dev/App_KernelDevDebugContainer.xml
+    ignoreErrors:
+         - '#Unsafe usage of new static\(\)#'
+         - '#Property(.*)is never read, only written\.#'
+         - '#Property(.*)\$id is unused\.#'
+         - '#has an uninitialized readonly property \$id\.#'
+         - '#Offset(.*)might not exist on array\{dirname\?\: string, basename\: string, extension\?: string, filename\: string\}.#'
