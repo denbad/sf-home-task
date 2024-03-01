@@ -15,4 +15,11 @@ interface Loans
     public function paymentById(PaymentId $id): Payment|null;
 
     public function paymentByReference(PaymentReference $reference): Payment|null;
+
+    /**
+     * @param \DateTimeImmutable $conductedOn
+     *
+     * @return iterable<int, Payment>
+     */
+    public function paymentsByDate(\DateTimeImmutable $conductedOn): iterable;
 }
