@@ -56,7 +56,7 @@ final class ListPaymentsCommand extends Command
                 $payment->debtor()->ssn(),
                 $payment->reference()->asString(),
                 $payment->state()->name,
-                $payment->conductedAt()->format('Y-m-d H:s:i'),
+                $payment->conductedAt()->format('Y-m-d H:i:s'),
             ]);
         }
 
