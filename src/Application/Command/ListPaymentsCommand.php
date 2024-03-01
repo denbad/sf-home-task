@@ -44,12 +44,11 @@ final class ListPaymentsCommand extends Command
     private function renderTable(OutputInterface $output, iterable $payments): void
     {
         $table = (new Table($output))
-            ->setHeaders(['#', 'Id', 'Amount', 'Firstname', 'Lastname', 'Snn', 'Reference', 'State', 'Date']);
+            ->setHeaders(['#', 'Amount', 'Firstname', 'Lastname', 'Snn', 'Reference', 'State', 'Date']);
 
         foreach ($payments as $i => $payment) {
             $table->addRow([
                 $i + 1,
-                $payment->id()->asString(),
                 $payment->amount()->asString(),
                 $payment->debtor()->firstName(),
                 $payment->debtor()->lastName(),
