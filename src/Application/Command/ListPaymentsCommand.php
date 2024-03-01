@@ -10,6 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class ListPaymentsCommand extends Command
@@ -43,11 +44,14 @@ final class ListPaymentsCommand extends Command
      */
     private function renderTable(OutputInterface $output, iterable $payments): void
     {
-        $table = (new Table($output))
-            ->setHeaders(['#', 'Amount', 'Firstname', 'Lastname', 'Snn', 'Reference', 'State', 'Date']);
+        /** @var ConsoleOutput $output */
+        $table = new Table($output->section());
+        $table
+            ->setHeaders(['#', 'Amount', 'Firstname', 'Lastname', 'Snn', 'Reference', 'State', 'Date'])
+            ->render();
 
         foreach ($payments as $i => $payment) {
-            $table->addRow([
+            $table->appendRow([
                 $i + 1,
                 $payment->amount()->asString(),
                 $payment->debtor()->firstName(),
@@ -58,8 +62,6 @@ final class ListPaymentsCommand extends Command
                 $payment->conductedAt()->format('Y-m-d H:i:s'),
             ]);
         }
-
-        $table->render();
     }
 
     /**
