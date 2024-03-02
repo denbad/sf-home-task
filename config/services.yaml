@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    support_email: 'support@example.com'
 
 services:
     # default configuration for services in *this* file
@@ -33,6 +34,8 @@ services:
     # Application event listener
 
     Application\Event\NotifyAdmin:
+        arguments:
+            $supportEmail: '%support_email%'
         tags:
             -   name: 'messenger.message_handler'
                 handles: 'Application\Event\PaymentFailed'
@@ -72,11 +75,6 @@ services:
 
     Infrastructure\Orm\LoanRepository: ~
     Infrastructure\Orm\CustomerRepository: ~
-
-    # Notificator
-
-    Infrastructure\Notificator\EmailNotificator: ~
-    Infrastructure\Notificator\SmsNotificator: ~
 
     # File reader
 

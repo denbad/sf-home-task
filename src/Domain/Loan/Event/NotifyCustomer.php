@@ -7,18 +7,16 @@ namespace Domain\Loan\Event;
 use Domain\Loan\Customer;
 use Domain\Loan\CustomerId;
 use Domain\Loan\Customers;
-use Infrastructure\Notificator\EmailMessage;
-use Infrastructure\Notificator\EmailNotificator;
-use Infrastructure\Notificator\SmsMessage;
-use Infrastructure\Notificator\SmsNotificator;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
+use Symfony\Component\Notifier\Recipient\Recipient;
 
 final readonly class NotifyCustomer
 {
     public function __construct(
         private Customers $customers,
-        private EmailNotificator $emailNotificator,
-        private SmsNotificator $smsNotificator,
+        private NotifierInterface $notifier,
         private LoggerInterface $logger,
     ) {
     }
@@ -31,9 +29,12 @@ final readonly class NotifyCustomer
             return;
         }
 
-        $tpl = 'Dear %s, the loan %s has been completely paid off! Congratulations!';
-        $message = sprintf($tpl, $customer, $event->loanNumber);
-        $this->notifyCustomer($customer, $message);
+        [$subject, $text] = [
+            sprintf('The loan %s has been paid off!', $event->loanNumber),
+            sprintf('Dear %s, the loan %s has been paid off! Congratulations!', $customer, $event->loanNumber),
+        ];
+
+        $this->notifyCustomer($customer, $subject, $text);
     }
 
     public function whenPaymentReceived(PaymentReceived $event): void
@@ -44,9 +45,12 @@ final readonly class NotifyCustomer
             return;
         }
 
-        $tpl = 'Dear %s, the payment %s has been successfully conducted! Thank you!';
-        $message = sprintf($tpl, $customer, $event->paymentReference);
-        $this->notifyCustomer($customer, $message);
+        [$subject, $text] = [
+            sprintf('The payment %s has been conducted!', $event->paymentReference),
+            sprintf('Dear %s, the payment %s has been conducted! Awesome!', $customer, $event->paymentReference),
+        ];
+
+        $this->notifyCustomer($customer, $subject, $text);
     }
 
     private function findCustomer(string $customerId): Customer|null
@@ -54,21 +58,22 @@ final readonly class NotifyCustomer
         return $this->customers->byId(CustomerId::create($customerId));
     }
 
-    private function notifyCustomer(Customer $customer, string $message): void
+    private function notifyCustomer(Customer $customer, string $subject, string $text): void
     {
+        [$email, $phoneNumber] = [
+            (string) $customer->email()?->asString(),
+            (string) $customer->phoneNumber()?->asString(),
+        ];
+
+        $notification = (new Notification(
+            subject: $subject,
+            channels: ['email', 'sms'],
+        ))->content($text);
+
+        $recipient = new Recipient($email, $phoneNumber);
+
         try {
-            [$email, $phoneNumber] = [
-                $customer->email()?->asString(),
-                $customer->phoneNumber()?->asString(),
-            ];
-
-            if ($email !== null) {
-                $this->emailNotificator->notify(new EmailMessage(address: $email, body: $message));
-            }
-
-            if ($phoneNumber !== null) {
-                $this->smsNotificator->notify(new SmsMessage(address: $phoneNumber, body: $message));
-            }
+            $this->notifier->send($notification, $recipient);
         } catch (\Throwable $e) {
             $this->logger->info($e->getMessage());
         }

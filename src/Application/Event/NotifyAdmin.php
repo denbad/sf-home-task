@@ -4,30 +4,45 @@ declare(strict_types=1);
 
 namespace Application\Event;
 
-use Infrastructure\Notificator\EmailMessage;
-use Infrastructure\Notificator\EmailNotificator;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
+use Symfony\Component\Notifier\Recipient\Recipient;
+use Webmozart\Assert\Assert;
 
 final readonly class NotifyAdmin
 {
     public function __construct(
-        private EmailNotificator $emailNotificator,
+        private NotifierInterface $notifier,
         private LoggerInterface $logger,
+        private string $supportEmail,
     ) {
+        Assert::email($this->supportEmail);
     }
 
     public function whenPaymentFailed(PaymentFailed $event): void
     {
+        [$subject, $text] = [
+            'A payment has failed to conduct!',
+            'Take a look:'.PHP_EOL.implode(PHP_EOL, $event->errors),
+        ];
+
+        $this->notifyAdmin($subject, $text);
+    }
+
+    private function notifyAdmin(string $subject, string $text): void
+    {
+        $notification = (new Notification(
+            subject: $subject,
+            channels: ['email'],
+        ))->content($text);
+
+        $recipient = new Recipient($this->supportEmail);
+
         try {
-            $message = 'Hello admin, a payment has failed to conduct! Take a look!';
-            $this->notifyAdmin('support@example.com', $message);
+            $this->notifier->send($notification, $recipient);
         } catch (\Throwable $e) {
             $this->logger->info($e->getMessage());
         }
-    }
-
-    private function notifyAdmin(string $email, string $message): void
-    {
-        $this->emailNotificator->notify(new EmailMessage(address: $email, body: $message));
     }
 }
