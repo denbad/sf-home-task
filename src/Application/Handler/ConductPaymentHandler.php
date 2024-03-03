@@ -14,9 +14,9 @@ use Domain\Loan\Event\PaymentReceived;
 use Domain\Loan\Loan;
 use Domain\Loan\LoanNumber;
 use Domain\Loan\Loans;
-use Domain\Loan\Payment;
 use Domain\Loan\PaymentReference;
-use Domain\Loan\PaymentState;
+use Domain\Loan\PaymentRequest;
+use Domain\Loan\PaymentResult;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class ConductPaymentHandler
@@ -40,13 +40,12 @@ class ConductPaymentHandler
             throw LoanStateForbidden::alreadyPaidOff($command->loanNumber);
         }
 
-        if ($this->paymentExists($command->reference)) {
-            // throw LoanStateForbidden::paymentAlreadyConducted($command->loanNumber);
-            throw PaymentStateForbidden::alreadyConducted($command->reference);
+        if ($this->loanConducted($command->reference)) {
+            throw LoanStateForbidden::paymentAlreadyConducted($command->reference);
         }
 
-        $payment = $this->createPayment($command);
-        $this->process($loan, $payment);
+        $paymentRequest = $this->createPaymentRequest($command);
+        $paymentResult = $this->process($loan, $paymentRequest);
 
         if ($loan->isPaid()) {
             $this->dispatch(new LoanPaidOff(
@@ -55,15 +54,13 @@ class ConductPaymentHandler
             ));
         }
 
-        if ($payment->isReceived()) {
-            $this->dispatch(new PaymentReceived(
-                customerId: $loan->customerId()->asString(),
-                paymentReference: $payment->reference()->asString(),
-            ));
-        }
+        $this->dispatch(new PaymentReceived(
+            customerId: $loan->customerId()->asString(),
+            paymentReference: $paymentResult->reference->asString(),
+        ));
     }
 
-    private function process(Loan $loan, Payment $payment): void
+    private function process(Loan $loan, PaymentRequest $paymentRequest): PaymentResult
     {
         $manager = $this->getManager();
         $conn = $manager->getConnection();
@@ -72,7 +69,7 @@ class ConductPaymentHandler
             $conn->beginTransaction();
 
             $manager->lock($loan, LockMode::PESSIMISTIC_WRITE);
-            $loan->fulfill($payment);
+            $paymentResult = $loan->fulfill($paymentRequest);
             $manager->flush();
 
             $conn->commit();
@@ -81,12 +78,13 @@ class ConductPaymentHandler
 
             throw $e;
         }
+
+        return $paymentResult;
     }
 
-    private function createPayment(ConductPayment $command): Payment
+    private function createPaymentRequest(ConductPayment $command): PaymentRequest
     {
-        return new Payment(
-            id: $this->loans->nextPaymentIdentity(),
+        return new PaymentRequest(
             amount: Amount::create($command->amount),
             debtor: Debtor::create(
                 firstName: $command->firstName,
@@ -94,7 +92,6 @@ class ConductPaymentHandler
                 ssn: $command->ssn
             ),
             reference: PaymentReference::create($command->reference),
-            state: PaymentState::UNASSIGNED,
             conductedAt: new \DateTimeImmutable($command->conductedOn)
         );
     }
@@ -106,14 +103,12 @@ class ConductPaymentHandler
 
     private function findLoan(string $number): Loan|null
     {
-        return $this->loans->loanByNumber(LoanNumber::create($number));
+        return $this->loans->byNumber(LoanNumber::create($number));
     }
 
-    private function paymentExists(string $reference): bool
+    private function loanConducted(string $reference): bool
     {
-        $payment = $this->loans->paymentByReference(PaymentReference::create($reference));
-
-        return $payment instanceof Payment;
+        return $this->loans->conductedExists(PaymentReference::create($reference));
     }
 
     private function getManager(): EntityManagerInterface

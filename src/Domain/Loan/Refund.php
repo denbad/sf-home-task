@@ -6,7 +6,7 @@ namespace Domain\Loan;
 
 use Domain\Amount;
 
-final readonly class Refund
+readonly class Refund
 {
     private string $id;
     private string $paymentReference;
@@ -37,4 +37,3 @@ final readonly class Refund
         return Amount::create($this->amount);
     }
 }
-

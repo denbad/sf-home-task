@@ -9,7 +9,6 @@ use Application\Handler\ConductPayment;
 use Application\Handler\ConductPaymentHandler;
 use Application\Handler\LoanMissing;
 use Application\Handler\LoanStateForbidden;
-use Application\Handler\PaymentStateForbidden;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,9 +43,9 @@ final readonly class PaymentAction
         try {
             ($this->paymentHandler)($command);
             [$status, $error] = [Response::HTTP_OK, null];
-        } catch (LoanMissing|LoanStateForbidden $e) {
+        } catch (LoanMissing $e) {
             [$status, $error] = [Response::HTTP_BAD_REQUEST, $e->getMessage()];
-        } catch (PaymentStateForbidden $e) {
+        } catch (LoanStateForbidden $e) {
             [$status, $error] = [Response::HTTP_CONFLICT, $e->getMessage()];
         } catch (\Throwable $e) {
             [$status, $error] = [Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage()];

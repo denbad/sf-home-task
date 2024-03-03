@@ -40,33 +40,45 @@ class Loan
         $this->refunds = $refunds;
     }
 
-    public function fulfill(Payment $payment): void
+    public function fulfill(PaymentRequest $paymentRequest): PaymentResult
     {
         if (!$this->isActive()) {
             $this->throwNotActive();
         }
 
         $credit = Amount::create($this->amountToPay)
-            ->sub($payment->amount());
+            ->sub($paymentRequest->amount);
+
+        $paymentId = $this->nextPaymentIdentity();
 
         if ($credit->isZero()) {
             $this->markAsPaid();
-            $payment->markAsAssigned();
+            $payment = Payment::asAssigned($paymentId, $paymentRequest);
         } elseif ($credit->isNegative()) {
             $this->markAsPaid();
-            $this->addRefund($payment, $credit->abs());
-            $payment->markAsPartiallyAssigned();
+            $this->addRefund($paymentRequest, $credit->abs());
+            $payment = Payment::asPartiallyAssigned($paymentId, $paymentRequest);
         } else {
             $this->amountToPay = $credit->asString();
-            $payment->markAsAssigned();
+            $payment = Payment::asAssigned($paymentId, $paymentRequest);
         }
 
         $this->payments->add($payment);
+
+        return new PaymentResult($payment->reference());
     }
 
     public function id(): LoanId
     {
         return LoanId::create($this->id);
+    }
+
+    /**
+     * @return iterable<int, Payment>
+     */
+    public function payments(): iterable
+    {
+        return $this->payments;
     }
 
     public function customerId(): CustomerId
@@ -94,12 +106,12 @@ class Loan
         $this->state = LoanState::PAID->value;
     }
 
-    private function addRefund(Payment $payment, Amount $amount): void
+    private function addRefund(PaymentRequest $paymentRequest, Amount $amount): void
     {
         $this->refunds->add(new Refund(
             $this->nextRefundIdentity(),
-            $payment->reference(),
-            $payment->debtor(),
+            $paymentRequest->reference,
+            $paymentRequest->debtor,
             $amount
         ));
     }
@@ -124,13 +136,13 @@ class Loan
         return RefundId::create($this->uuid());
     }
 
-    private function uuid(): string
-    {
-        return (string) Uuid::v7();
-    }
-
     private function throwNotActive(): never
     {
         throw LoanStateForbidden::notActive(LoanState::from($this->state));
+    }
+
+    private function uuid(): string
+    {
+        return (string) Uuid::v7();
     }
 }

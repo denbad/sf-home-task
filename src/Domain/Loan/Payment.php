@@ -6,24 +6,24 @@ namespace Domain\Loan;
 
 use Domain\Amount;
 
-class Payment implements \Stringable
+readonly class Payment implements \Stringable
 {
-    private readonly string $id;
-    private readonly string $amount;
-    private readonly string $debtorFirstName;
-    private readonly string $debtorLastName;
-    private readonly string|null $debtorSnn;
-    private readonly string $reference;
+    private string $id;
+    private string $amount;
+    private string $debtorFirstName;
+    private string $debtorLastName;
+    private string|null $debtorSnn;
+    private string $reference;
     private int $state;
-    private readonly \DateTimeImmutable $conductedAt;
+    private \DateTimeImmutable $conductedAt;
 
-    public function __construct(
+    private function __construct(
         PaymentId $id,
         Amount $amount,
         Debtor $debtor,
         PaymentReference $reference,
-        PaymentState $state = PaymentState::UNASSIGNED,
-        \DateTimeImmutable $conductedAt = new \DateTimeImmutable(),
+        PaymentState $state,
+        \DateTimeImmutable $conductedAt,
     ) {
         $this->id = $id->asString();
         $this->amount = $amount->asString();
@@ -40,22 +40,14 @@ class Payment implements \Stringable
         return $this->reference;
     }
 
-    public function markAsAssigned(): void
+    public static function asAssigned(PaymentId $id, PaymentRequest $paymentRequest): self
     {
-        if (!$this->isUnassigned()) {
-            $this->throwNotUnassigned();
-        }
-
-        $this->state = PaymentState::ASSIGNED->value;
+        return self::create($id, $paymentRequest, PaymentState::ASSIGNED);
     }
 
-    public function markAsPartiallyAssigned(): void
+    public static function asPartiallyAssigned(PaymentId $id, PaymentRequest $paymentRequest): self
     {
-        if (!$this->isUnassigned()) {
-            $this->throwNotUnassigned();
-        }
-
-        $this->state = PaymentState::PARTIALLY_ASSIGNED->value;
+        return self::create($id, $paymentRequest, PaymentState::PARTIALLY_ASSIGNED);
     }
 
     public function id(): PaymentId
@@ -66,11 +58,6 @@ class Payment implements \Stringable
     public function state(): PaymentState
     {
         return PaymentState::from($this->state);
-    }
-
-    public function isReceived(): bool
-    {
-        return $this->isAssigned() || $this->isPartiallyAssigned();
     }
 
     public function isAssigned(): bool
@@ -107,18 +94,20 @@ class Payment implements \Stringable
         return $this->conductedAt;
     }
 
-    private function isUnassigned(): bool
+    private static function create(PaymentId $id, PaymentRequest $paymentRequest, PaymentState $state): self
     {
-        return $this->isState(PaymentState::UNASSIGNED);
+        return new self(
+            id: $id,
+            amount: $paymentRequest->amount,
+            debtor: $paymentRequest->debtor,
+            reference: $paymentRequest->reference,
+            state: $state,
+            conductedAt: $paymentRequest->conductedAt
+        );
     }
 
     private function isState(PaymentState $state): bool
     {
         return PaymentState::from($this->state) === $state;
-    }
-
-    private function throwNotUnassigned(): void
-    {
-        throw PaymentStateForbidden::notUnassigned(PaymentState::from($this->state));
     }
 }

@@ -6,7 +6,6 @@ namespace Domain\Loan;
 
 enum PaymentState: int
 {
-    case UNASSIGNED = 0;
     case ASSIGNED = 1;
     case PARTIALLY_ASSIGNED = 2;
 }

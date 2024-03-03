@@ -10,4 +10,9 @@ final class LoanStateForbidden extends \RuntimeException
     {
         return new self(sprintf('Loan "%s" already paid off.', $number));
     }
+
+    public static function paymentAlreadyConducted(string $reference): self
+    {
+        return new self(sprintf('Payment "%s" already conducted.', $reference));
+    }
 }

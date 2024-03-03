@@ -6,16 +6,16 @@ namespace Domain\Loan;
 
 interface Loans
 {
-    public function loanById(LoanId $id): Loan|null;
+    public function byId(LoanId $id): Loan|null;
 
-    public function loanByNumber(LoanNumber $number): Loan|null;
+    public function byNumber(LoanNumber $number): Loan|null;
 
-    public function paymentByReference(PaymentReference $reference): Payment|null;
+    public function conductedExists(PaymentReference $reference): bool;
 
     /**
      * @param \DateTimeImmutable $conductedOn
      *
-     * @return iterable<int, Payment>
+     * @return iterable<int, Loan>
      */
-    public function paymentsByDate(\DateTimeImmutable $conductedOn): iterable;
+    public function byConductedOn(\DateTimeImmutable $conductedOn): iterable;
 }

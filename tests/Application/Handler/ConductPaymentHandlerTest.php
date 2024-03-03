@@ -128,14 +128,14 @@ final class ConductPaymentHandlerTest extends TestCase
     private function givenLoanNotFound(): void
     {
         $this->loans
-            ->method('loanByNumber')
+            ->method('byNumber')
             ->willReturn(null);
     }
 
     private function givenLoanFound(LoanState $state): void
     {
         $this->loans
-            ->method('loanByNumber')
+            ->method('byNumber')
             ->willReturn(loan()
                 ->withState($state)
                 ->withAmountToPay(Amount::create('100.00'))
@@ -146,14 +146,14 @@ final class ConductPaymentHandlerTest extends TestCase
     private function givenPaymentAlreadyConducted(): void
     {
         $this->loans
-            ->method('paymentByReference')
+            ->method('conductedExists')
             ->willReturn(payment()->build());
     }
 
     private function givenPaymentNotConductedYet(): void
     {
         $this->loans
-            ->method('paymentByReference')
+            ->method('conductedExists')
             ->willReturn(null);
     }
 

@@ -8,7 +8,6 @@ use Application\Event\PaymentFailed;
 use Application\Handler\ConductPayment;
 use Application\Handler\ConductPaymentHandler;
 use Application\Handler\LoanStateForbidden;
-use Application\Handler\PaymentStateForbidden;
 use Infrastructure\FileReader\FileReader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -58,7 +57,7 @@ final class ExportPaymentsCommand extends Command
         try {
             $this->processImport($filePath);
             [$message, $error] = ['ok', null];
-        } catch (LoanStateForbidden|PaymentStateForbidden $e) {
+        } catch (LoanStateForbidden $e) {
             [$status, $message, $error] = [self::STATUS_DUPLICATE_ENTRY, $e->getMessage(), $e->getMessage()];
         } catch (\Throwable $e) {
             [$status, $message, $error] = [self::STATUS_PROCESS_ERROR, $e->getMessage(), $e->getMessage()];

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Application\Command;
 
+use Domain\Loan\Loan;
 use Domain\Loan\Loans;
-use Domain\Loan\Payment;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,12 +13,12 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class ListPaymentsCommand extends Command
+final class ListLoanPaymentsCommand extends Command
 {
     public function __construct(
         private readonly Loans $loans,
     ) {
-        parent::__construct(name: 'app:payments:list');
+        parent::__construct(name: 'app:loan-payments:list');
     }
 
     protected function configure(): void
@@ -33,16 +33,16 @@ final class ListPaymentsCommand extends Command
         }
 
         $date = new \DateTimeImmutable($input->getOption('date'));
-        $this->renderTable($output, $this->loadPayments($date));
+        $this->renderTable($output, $this->loadLoans($date));
 
         return 0;
     }
 
     /**
-     * @param OutputInterface        $output
-     * @param iterable<int, Payment> $payments
+     * @param OutputInterface     $output
+     * @param iterable<int, Loan> $loans
      */
-    private function renderTable(OutputInterface $output, iterable $payments): void
+    private function renderTable(OutputInterface $output, iterable $loans): void
     {
         /** @var ConsoleOutput $output */
         $table = new Table($output->section());
@@ -50,27 +50,29 @@ final class ListPaymentsCommand extends Command
             ->setHeaders(['#', 'Amount', 'Firstname', 'Lastname', 'Snn', 'Reference', 'State', 'Date'])
             ->render();
 
-        foreach ($payments as $i => $payment) {
-            $table->appendRow([
-                $i + 1,
-                $payment->amount()->asString(),
-                $payment->debtor()->firstName(),
-                $payment->debtor()->lastName(),
-                $payment->debtor()->ssn(),
-                $payment->reference()->asString(),
-                $payment->state()->name,
-                $payment->conductedAt()->format('Y-m-d H:i:s'),
-            ]);
+        foreach ($loans as $i => $loan) {
+            foreach ($loan->payments() as $payment) {
+                $table->appendRow([
+                    $i + 1,
+                    $payment->amount()->asString(),
+                    $payment->debtor()->firstName(),
+                    $payment->debtor()->lastName(),
+                    $payment->debtor()->ssn(),
+                    $payment->reference()->asString(),
+                    $payment->state()->name,
+                    $payment->conductedAt()->format('Y-m-d H:i:s'),
+                ]);
+            }
         }
     }
 
     /**
      * @param \DateTimeImmutable $conductedOn
      *
-     * @return iterable<int, Payment>
+     * @return iterable<int, Loan>
      */
-    private function loadPayments(\DateTimeImmutable $conductedOn): iterable
+    private function loadLoans(\DateTimeImmutable $conductedOn): iterable
     {
-        return $this->loans->paymentsByDate($conductedOn);
+        return $this->loans->byConductedOn($conductedOn);
     }
 }
