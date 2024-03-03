@@ -6,6 +6,7 @@ namespace Application\Handler;
 
 final class PaymentStateForbidden extends \RuntimeException
 {
+    /** @todo delete */
     public static function alreadyConducted(string $reference): self
     {
         return new self(sprintf('Payment "%s" already conducted.', $reference));

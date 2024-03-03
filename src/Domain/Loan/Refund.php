@@ -8,8 +8,7 @@ use Domain\Amount;
 
 final readonly class Refund
 {
-    private string|null $id;
-    private string $paymentId;
+    private string $id;
     private string $paymentReference;
     private string $debtorFirstName;
     private string $debtorLastName;
@@ -18,13 +17,13 @@ final readonly class Refund
     private \DateTimeImmutable $conductedAt;
 
     public function __construct(
-        PaymentId $paymentId,
+        RefundId $id,
         PaymentReference $paymentReference,
         Debtor $debtor,
         Amount $amount,
         \DateTimeImmutable $conductedAt = new \DateTimeImmutable(),
     ) {
-        $this->paymentId = $paymentId->asString();
+        $this->id = $id->asString();
         $this->paymentReference = $paymentReference->asString();
         $this->debtorFirstName = $debtor->firstName();
         $this->debtorLastName = $debtor->lastName();
@@ -38,3 +37,4 @@ final readonly class Refund
         return Amount::create($this->amount);
     }
 }
+

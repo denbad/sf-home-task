@@ -22,6 +22,7 @@ final class ConductPaymentHandlerFake extends ConductPaymentHandler
             'LN00000001' => throw LoanMissing::missing($command->loanNumber),
             'LN00000002' => throw LoanStateForbidden::alreadyPaidOff($command->loanNumber),
             'LN00000003' => throw PaymentStateForbidden::alreadyConducted($command->reference),
+            //'LN00000003' => throw LoanStateForbidden::paymentAlreadyConducted($command->reference),
             'LN00000004' => throw new \RuntimeException('Fake exception.'),
             default => null,
         };

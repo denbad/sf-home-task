@@ -7,6 +7,7 @@ namespace Domain\Loan;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Domain\Amount;
+use Symfony\Component\Uid\Uuid;
 
 class Loan
 {
@@ -96,7 +97,7 @@ class Loan
     private function addRefund(Payment $payment, Amount $amount): void
     {
         $this->refunds->add(new Refund(
-            $payment->id(),
+            $this->nextRefundIdentity(),
             $payment->reference(),
             $payment->debtor(),
             $amount
@@ -111,6 +112,21 @@ class Loan
     private function isState(LoanState $state): bool
     {
         return LoanState::from($this->state) === $state;
+    }
+
+    private function nextPaymentIdentity(): PaymentId
+    {
+        return PaymentId::create($this->uuid());
+    }
+
+    private function nextRefundIdentity(): RefundId
+    {
+        return RefundId::create($this->uuid());
+    }
+
+    private function uuid(): string
+    {
+        return (string) Uuid::v7();
     }
 
     private function throwNotActive(): never

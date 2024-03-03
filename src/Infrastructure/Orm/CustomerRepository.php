@@ -12,8 +12,6 @@ use Domain\Loan\Customers;
 
 final class CustomerRepository extends ServiceEntityRepository implements Customers
 {
-    use AddsRepositoryHelperMethods;
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Customer::class);

@@ -41,6 +41,7 @@ class ConductPaymentHandler
         }
 
         if ($this->paymentExists($command->reference)) {
+            // throw LoanStateForbidden::paymentAlreadyConducted($command->loanNumber);
             throw PaymentStateForbidden::alreadyConducted($command->reference);
         }
 

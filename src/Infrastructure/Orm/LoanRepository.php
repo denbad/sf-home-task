@@ -11,21 +11,13 @@ use Domain\Loan\LoanId;
 use Domain\Loan\LoanNumber;
 use Domain\Loan\Loans;
 use Domain\Loan\Payment;
-use Domain\Loan\PaymentId;
 use Domain\Loan\PaymentReference;
 
 final class LoanRepository extends ServiceEntityRepository implements Loans
 {
-    use AddsRepositoryHelperMethods;
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Loan::class);
-    }
-
-    public function nextPaymentIdentity(): PaymentId
-    {
-        return PaymentId::create($this->uuid());
     }
 
     public function loanById(LoanId $id): Loan|null
@@ -40,13 +32,7 @@ final class LoanRepository extends ServiceEntityRepository implements Loans
         ]);
     }
 
-    public function paymentById(PaymentId $id): Payment|null
-    {
-        return $this->getEntityManager()
-            ->getRepository(Payment::class)
-            ->find($id->asString());
-    }
-
+    // to do start: return Loan
     public function paymentByReference(PaymentReference $reference): Payment|null
     {
         return $this->getEntityManager()
@@ -67,4 +53,5 @@ final class LoanRepository extends ServiceEntityRepository implements Loans
             ->getQuery()
             ->toIterable();
     }
+    // to do end: return Loan
 }

@@ -4,16 +4,13 @@
     https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
     <entity name="Domain\Loan\Refund" table="loan_refund" read-only="true">
         <unique-constraints>
-            <unique-constraint columns="payment_id" name="payment_idx_unique_idx" />
             <unique-constraint columns="payment_reference" name="payment_reference_unique_idx" />
         </unique-constraints>
 
         <id name="id" type="string" length="36">
-            <generator strategy="CUSTOM" />
-            <custom-id-generator class="\Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator" />
+            <generator strategy="NONE" />
         </id>
 
-        <field name="paymentId" length="36" />
         <field name="paymentReference" length="64" />
 
         <field name="amount" type="decimal" precision="8" scale="2">
