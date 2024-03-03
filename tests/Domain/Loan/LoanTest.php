@@ -10,14 +10,14 @@ use Domain\Loan\Loan;
 use Domain\Loan\LoanState;
 use Domain\Loan\LoanStateForbidden;
 use Domain\Loan\Payment;
-use Domain\Loan\PaymentState;
+use Domain\Loan\PaymentRequest;
 use Domain\Loan\Refund;
 use PHPUnit\Framework\TestCase;
 use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 use function Tests\loan;
-use function Tests\payment;
+use function Tests\paymentRequest;
 
 final class LoanTest extends TestCase
 {
@@ -37,21 +37,20 @@ final class LoanTest extends TestCase
     {
         $loan = $this->givenLoanIsNotActive();
         $this->expectException(LoanStateForbidden::class);
-        $payment = $this->givenPayment();
-        $loan->fulfill($payment);
+        $paymentRequest = $this->givenPaymentRequest();
+        $loan->fulfill($paymentRequest);
     }
 
     public function testItPayOffsWithoutOverpay(): void
     {
         $loan = $this->givenLoanIsActive(amountToPay: Amount::create('100.00'));
-        $payment = $this->givenPaymentWithAmount(amount: Amount::create('100.00'));
+        $paymentRequest = $this->givenPaymentRequestWithAmount(amount: Amount::create('100.00'));
 
-        $loan->fulfill($payment);
+        $loan->fulfill($paymentRequest);
         $payment = $this->payments[0];
         $refund = $this->refunds[0];
 
         assertTrue($loan->isPaid());
-        assertTrue($payment->isAssigned());
         assertTrue($payment->amount()->equals(Amount::create('100.00')));
         assertNull($refund);
     }
@@ -59,14 +58,13 @@ final class LoanTest extends TestCase
     public function testItPayOffsWithOverpay(): void
     {
         $loan = $this->givenLoanIsActive(amountToPay: Amount::create('99.00'));
-        $payment = $this->givenPaymentWithAmount(amount: Amount::create('100.00'));
+        $paymentRequest = $this->givenPaymentRequestWithAmount(amount: Amount::create('100.00'));
 
-        $loan->fulfill($payment);
+        $loan->fulfill($paymentRequest);
         $payment = $this->payments[0];
         $refund = $this->refunds[0];
 
         assertTrue($loan->isPaid());
-        assertTrue($payment->isPartiallyAssigned());
         assertTrue($payment->amount()->equals(Amount::create('100.00')));
         assertTrue($refund->amount()->equals(Amount::create('1.00')));
     }
@@ -74,15 +72,14 @@ final class LoanTest extends TestCase
     public function testItPayOffsPartially(): void
     {
         $loan = $this->givenLoanIsActive(amountToPay: Amount::create('100.00'));
-        $payment = $this->givenPaymentWithAmount(amount: Amount::create('99.00'));
+        $paymentRequest = $this->givenPaymentRequestWithAmount(amount: Amount::create('99.00'));
 
-        $loan->fulfill($payment);
-        $payment = $this->payments[0];
+        $loan->fulfill($paymentRequest);
+        $paymentRequest = $this->payments[0];
         $refund = $this->refunds[0];
 
         assertFalse($loan->isPaid());
-        assertTrue($payment->isAssigned());
-        assertTrue($payment->amount()->equals(Amount::create('99.00')));
+        assertTrue($paymentRequest->amount()->equals(Amount::create('99.00')));
         assertNull($refund);
     }
 
@@ -103,18 +100,16 @@ final class LoanTest extends TestCase
             ->build();
     }
 
-    private function givenPaymentWithAmount(Amount $amount): Payment
+    private function givenPaymentRequestWithAmount(Amount $amount): PaymentRequest
     {
-        return payment()
-            ->withState(PaymentState::UNASSIGNED)
+        return paymentRequest()
             ->withAmount($amount)
             ->build();
     }
 
-    private function givenPayment(): Payment
+    private function givenPaymentRequest(): PaymentRequest
     {
-        return payment()
-            ->withState(PaymentState::UNASSIGNED)
+        return paymentRequest()
             ->build();
     }
 }

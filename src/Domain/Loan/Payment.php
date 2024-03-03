@@ -60,16 +60,6 @@ readonly class Payment implements \Stringable
         return PaymentState::from($this->state);
     }
 
-    public function isAssigned(): bool
-    {
-        return $this->isState(PaymentState::ASSIGNED);
-    }
-
-    public function isPartiallyAssigned(): bool
-    {
-        return $this->isState(PaymentState::PARTIALLY_ASSIGNED);
-    }
-
     public function reference(): PaymentReference
     {
         return PaymentReference::create($this->reference);
@@ -104,10 +94,5 @@ readonly class Payment implements \Stringable
             state: $state,
             conductedAt: $paymentRequest->conductedAt
         );
-    }
-
-    private function isState(PaymentState $state): bool
-    {
-        return PaymentState::from($this->state) === $state;
     }
 }

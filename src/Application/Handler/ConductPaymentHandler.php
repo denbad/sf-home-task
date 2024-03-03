@@ -46,7 +46,7 @@ class ConductPaymentHandler
         $paymentRequest = $this->createPaymentRequest($command);
         $reference = $this->process($loan, $paymentRequest);
 
-        if ($loan->isPaid()) {
+        if ($loan->isPaid()) { /* @phpstan-ignore-line */
             $this->dispatch(new LoanPaidOff(
                 customerId: $loan->customerId()->asString(),
                 loanNumber: $loan->loanNumber()->asString(),

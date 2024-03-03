@@ -58,7 +58,7 @@ final class PaymentActionTest extends TestCase
         $request = $this->givenValidRequest(description: 'LN00000002');
         $response = ($this->action)($request);
 
-        $this->assertStatusCode($response, Response::HTTP_BAD_REQUEST);
+        $this->assertStatusCode($response, Response::HTTP_CONFLICT);
         $this->assertResponseKeyExists($response, 'error');
         $this->assertFailedEventDispatched();
     }

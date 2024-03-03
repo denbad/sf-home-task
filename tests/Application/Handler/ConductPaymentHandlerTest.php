@@ -8,7 +8,6 @@ use Application\Handler\ConductPayment;
 use Application\Handler\ConductPaymentHandler;
 use Application\Handler\LoanMissing;
 use Application\Handler\LoanStateForbidden;
-use Application\Handler\PaymentStateForbidden;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -22,7 +21,6 @@ use Tests\Application\EventBusSpy;
 use function PHPUnit\Framework\assertThat;
 use function PHPUnit\Framework\equalTo;
 use function Tests\loan;
-use function Tests\payment;
 
 final class ConductPaymentHandlerTest extends TestCase
 {
@@ -69,7 +67,7 @@ final class ConductPaymentHandlerTest extends TestCase
     {
         $this->givenLoanFound(state: LoanState::ACTIVE);
         $this->givenPaymentAlreadyConducted();
-        $this->expectException(PaymentStateForbidden::class);
+        $this->expectException(LoanStateForbidden::class);
         $this->handle(amount: Amount::create('99.9'));
     }
 
@@ -147,14 +145,14 @@ final class ConductPaymentHandlerTest extends TestCase
     {
         $this->loans
             ->method('conductedExists')
-            ->willReturn(payment()->build());
+            ->willReturn(true);
     }
 
     private function givenPaymentNotConductedYet(): void
     {
         $this->loans
             ->method('conductedExists')
-            ->willReturn(null);
+            ->willReturn(false);
     }
 
     private function givenExceptionIsThrownInTheProcess(): void
