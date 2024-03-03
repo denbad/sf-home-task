@@ -41,11 +41,12 @@ final class LoanRepository extends ServiceEntityRepository implements Loans
     {
         return $this->createQueryBuilder('l')
             ->addSelect('p')
+            ->join('l.payments', 'p')
             ->andWhere('p.conductedAt BETWEEN :dateFrom AND :dateTo')
             ->setParameter('dateFrom', $conductedOn->setTime(0, 0))
             ->setParameter('dateTo', $conductedOn->setTime(23, 59, 59))
             ->getQuery()
-            ->toIterable();
+            ->getResult();
     }
 
     private function findPaymentByReference(PaymentReference $reference): Payment|null

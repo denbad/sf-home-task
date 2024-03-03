@@ -30,7 +30,7 @@ curl -k https://demo.baboon.localhost/api/payment?firstname=James&lastname=Bond&
 ./run bin/console app:payments:export --file=payments-4.csv
 ```
 ```shell
-./run bin/console app:payments:list --date=Y-D-m
+./run bin/console app:payments:list --date=2022-12-12
 ```
 
 ### Miscellaneous
