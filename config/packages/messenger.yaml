@@ -8,16 +8,11 @@ framework:
                 default_middleware: allow_no_handlers
 
         transports:
-            application_events:
-                dsn: '%env(resolve:MESSENGER_APPLICATION_EVENTS_DSN)%'
-                retry_strategy:
-                    max_retries: 0
-
-            domain_events:
-                dsn: '%env(resolve:MESSENGER_DOMAIN_EVENTS_DSN)%'
+            async:
+                dsn: '%env(resolve:MESSENGER_ASYNC_EVENTS_DSN)%'
                 retry_strategy:
                     max_retries: 0
 
         routing:
-            Application\Event\ApplicationEvent: application_events
-            Domain\Loan\Event\DomainEvent: domain_events
+            Application\Event\ApplicationEvent: async
+            Domain\Loan\Event\DomainEvent: async

@@ -21,7 +21,7 @@ cd demo
 ./run start
 ```
 ```shell
-./run bin/console messenger:consume application_events domain_events -vvv
+./run bin/console messenger:consume async -vvv
 ```
 ```shell
 curl -k https://demo.baboon.localhost/api/payment?firstname=James&lastname=Bond&paymentDate=2022-12-12T15%3A19%3A21%2B00%3A00&amount=399.99&description=LN20221212&refId=130f8a89-51c9-47d0-a6ef-1aea54924d3a
@@ -118,7 +118,7 @@ Run unit tests:
 Start background workers:
 
 ```shell
-./run bin/console messenger:consume application_events domain_events -vvv
+./run bin/console messenger:consume async -vvv
 ```
 
 (Optionally) Stop workers:
