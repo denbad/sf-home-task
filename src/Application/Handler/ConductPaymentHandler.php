@@ -16,7 +16,6 @@ use Domain\Loan\LoanNumber;
 use Domain\Loan\Loans;
 use Domain\Loan\PaymentReference;
 use Domain\Loan\PaymentRequest;
-use Domain\Loan\PaymentResult;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class ConductPaymentHandler
@@ -45,7 +44,7 @@ class ConductPaymentHandler
         }
 
         $paymentRequest = $this->createPaymentRequest($command);
-        $paymentResult = $this->process($loan, $paymentRequest);
+        $reference = $this->process($loan, $paymentRequest);
 
         if ($loan->isPaid()) {
             $this->dispatch(new LoanPaidOff(
@@ -56,11 +55,11 @@ class ConductPaymentHandler
 
         $this->dispatch(new PaymentReceived(
             customerId: $loan->customerId()->asString(),
-            paymentReference: $paymentResult->reference->asString(),
+            paymentReference: $reference->asString(),
         ));
     }
 
-    private function process(Loan $loan, PaymentRequest $paymentRequest): PaymentResult
+    private function process(Loan $loan, PaymentRequest $paymentRequest): PaymentReference
     {
         $manager = $this->getManager();
         $conn = $manager->getConnection();
@@ -69,7 +68,7 @@ class ConductPaymentHandler
             $conn->beginTransaction();
 
             $manager->lock($loan, LockMode::PESSIMISTIC_WRITE);
-            $paymentResult = $loan->fulfill($paymentRequest);
+            $reference = $loan->fulfill($paymentRequest);
             $manager->flush();
 
             $conn->commit();
@@ -79,7 +78,7 @@ class ConductPaymentHandler
             throw $e;
         }
 
-        return $paymentResult;
+        return $reference;
     }
 
     private function createPaymentRequest(ConductPayment $command): PaymentRequest

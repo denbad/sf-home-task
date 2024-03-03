@@ -40,7 +40,7 @@ class Loan
         $this->refunds = $refunds;
     }
 
-    public function fulfill(PaymentRequest $paymentRequest): PaymentResult
+    public function fulfill(PaymentRequest $paymentRequest): PaymentReference
     {
         if (!$this->isActive()) {
             $this->throwNotActive();
@@ -65,7 +65,7 @@ class Loan
 
         $this->payments->add($payment);
 
-        return new PaymentResult($payment->reference());
+        return $payment->reference();
     }
 
     public function id(): LoanId

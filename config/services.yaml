@@ -22,7 +22,7 @@ services:
                 '@Infrastructure\FileReader\CsvReader'
         tags: [ 'console.command' ]
 
-    Application\Command\ListLoanPaymentsCommand: ~
+    Application\Command\ListPaymentsCommand: ~
 
     # Controller
 

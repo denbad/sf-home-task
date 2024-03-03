@@ -13,12 +13,12 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class ListLoanPaymentsCommand extends Command
+final class ListPaymentsCommand extends Command
 {
     public function __construct(
         private readonly Loans $loans,
     ) {
-        parent::__construct(name: 'app:loan-payments:list');
+        parent::__construct(name: 'app:payments:list');
     }
 
     protected function configure(): void
