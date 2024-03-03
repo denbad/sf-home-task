@@ -63,10 +63,10 @@ final class ConductPaymentHandlerTest extends TestCase
         $this->handle(amount: Amount::create('99.9'));
     }
 
-    public function testItThrowsExceptionGivenPaymentAlreadyConducted(): void
+    public function testItThrowsExceptionGivenLoanAlreadyConducted(): void
     {
         $this->givenLoanFound(state: LoanState::ACTIVE);
-        $this->givenPaymentAlreadyConducted();
+        $this->givenLoanAlreadyConducted();
         $this->expectException(LoanStateForbidden::class);
         $this->handle(amount: Amount::create('99.9'));
     }
@@ -74,7 +74,7 @@ final class ConductPaymentHandlerTest extends TestCase
     public function testItRollsBackTransactionOnExceptionThrown(): void
     {
         $this->givenLoanFound(state: LoanState::ACTIVE);
-        $this->givenPaymentNotConductedYet();
+        $this->givenLoanNotConductedYet();
         $this->givenExceptionIsThrownInTheProcess();
 
         try {
@@ -92,7 +92,7 @@ final class ConductPaymentHandlerTest extends TestCase
     public function testItDispatchEventPaymentIsReceived(): void
     {
         $this->givenLoanFound(state: LoanState::ACTIVE);
-        $this->givenPaymentNotConductedYet();
+        $this->givenLoanNotConductedYet();
         $this->handle(amount: Amount::create('99.9'));
 
         assertThat($this->spy, equalTo([
@@ -106,7 +106,7 @@ final class ConductPaymentHandlerTest extends TestCase
     public function testItDispatchEventGivenLoanIsPaidOff(): void
     {
         $this->givenLoanFound(state: LoanState::ACTIVE);
-        $this->givenPaymentNotConductedYet();
+        $this->givenLoanNotConductedYet();
         $this->handle(amount: Amount::create('100.01'));
 
         assertThat($this->spy, equalTo([
@@ -141,14 +141,14 @@ final class ConductPaymentHandlerTest extends TestCase
             );
     }
 
-    private function givenPaymentAlreadyConducted(): void
+    private function givenLoanAlreadyConducted(): void
     {
         $this->loans
             ->method('conductedExists')
             ->willReturn(true);
     }
 
-    private function givenPaymentNotConductedYet(): void
+    private function givenLoanNotConductedYet(): void
     {
         $this->loans
             ->method('conductedExists')

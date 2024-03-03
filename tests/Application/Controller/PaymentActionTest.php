@@ -53,7 +53,7 @@ final class PaymentActionTest extends TestCase
         $this->assertFailedEventDispatched();
     }
 
-    public function testItReturnsBadRequestResponseGivenLoanForbiddenStatus(): void
+    public function testItReturnsConflictResponseGivenLoanAlreadyPaidOff(): void
     {
         $request = $this->givenValidRequest(description: 'LN00000002');
         $response = ($this->action)($request);
@@ -63,7 +63,7 @@ final class PaymentActionTest extends TestCase
         $this->assertFailedEventDispatched();
     }
 
-    public function testItReturnsConflictResponseGivenPaymentForbiddenStatus(): void
+    public function testItReturnsConflictResponseGivenLoanAlreadyConducted(): void
     {
         $request = $this->givenValidRequest(description: 'LN00000003');
         $response = ($this->action)($request);
