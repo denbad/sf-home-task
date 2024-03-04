@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Domain\Loan;
 
 use Domain\AddsIdentityMethods;
-use Domain\Identity;
 
-final readonly class RefundId implements Identity
+final readonly class RefundId
 {
     use AddsIdentityMethods;
 }
